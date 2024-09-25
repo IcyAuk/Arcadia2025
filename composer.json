@@ -1,0 +1,15 @@
+{
+    "name": "rnves/arcadia2025",
+    "autoload": {
+        "psr-4": {
+            "Rnves\\Arcadia2025\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "IcyAuk",
+            "email": "92365145+IcyAuk@users.noreply.github.com"
+        }
+    ],
+    "require": {}
+}
