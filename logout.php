@@ -1,15 +1,12 @@
+<?php include_once "template/header.php"; ?>
 
 <?php
-// Start the session
-session_start();
 
-// Unset all session variables
-$_SESSION = [];
+    $_SESSION = array();
+    session_destroy();
+    header("Location: home.php");
+    exit;
 
-// Destroy the session
-session_destroy();
-
-// Redirect to the login page or any other page after logout
-header("Location: login.php");
-exit();
 ?>
+
+<?php include_once "template/footer.php"; ?>

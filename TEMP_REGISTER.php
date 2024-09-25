@@ -4,7 +4,7 @@ require_once "lib/pdo.php";
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["create_admin"])) {
     $first_name = "José";
     $last_name = "Smith";
-    $email = "JoseArcadia";
+    $email = "JoseArcadia@test.com";
     $password = password_hash("012340", PASSWORD_BCRYPT);
     $is_admin = true;
 

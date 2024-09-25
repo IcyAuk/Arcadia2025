@@ -1,61 +1,71 @@
 <?php
-    // ADMIN FOLDER ONLY ACCESSIBLE BY REGISTERED ACCOUNTS
-    require "../lib/config.php";
-    require "../lib/pdo.php";
     session_start();
-    if (!isset($_SESSION['user_id'])) {
-        header("Location: ../login.php");
+    require_once "../lib/config.php";
+    require_once "../lib/pdo.php";
+
+    if(!isset($_SESSION["user_name"])) {
+        header("Location:../home.php");
         exit();
     }
 
+/*
+    THIS HEADER WILL DISPLAY DIFFERENT TABS DEPENDING
+    ON THE ROLE OF THE LOGGED-IN STAFF MEMBER
+    VET, MOD, or ADMIN
+*/
+
 ?>
 
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="en">
-
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" crossorigin="anonymous"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="../style/reset.css">
+    <link rel="stylesheet" href="./style/admin-style.css">
+    <script defer src="./script/script.js"></script>
 </head>
 
-<body>
+<body class="body-container">
+    <header class="body-col col-header border border-rounder">
 
-<nav class="navbar navbar-expand-lg bg-primary navbar-dark py-3 fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="dashboard.php">Dashboard</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="viewarticles.php">View Articles</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="comments.php">View Comments</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="messages.php">View Contact Messages</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="staff.php">View Staff Members</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="../index.php">Acceuil</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../logout.php">Deconnexion</a>
-                    </li>
-                </ul>
-            </div>
+        <a href="../home.php" class="header-navbar-row header-brand border-brand">ARCADIA</a>
+        <button id="navbar-button" class="border-rounded">≡</button>
+
+        <ul class="header-navbar-col">
+        <?php if (isset($_SESSION["user_name"])): ?>
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/rd_staff.php">RD Staff</li>
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/rd_vet.php">RD Vet</li>
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/c_staff.php">C Staff</li>
+
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/rud_comment.php">RUD Comments</li>
+
+
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/rud_service.php">RUD Service</li>
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/c_service.php">C Service</li>
+
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/rud_habitat.php">RUD habitat</li>
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/c_habitat.php">C habitat</li>
+
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/rud_animal.php">RUD animal</li>
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/c_animal.php">C animal</li>
+
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/rd_dietlog.php">RD Diet Log</li>
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/c_dietlog.php">C Diet Log</li>
+
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/rd_vetlog.php">RD Vet Log</li>
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/c_vetlog.php">C Vet Log</li>
+
+            <li class="header-navbar-row border-rounded" data-url="./xhr fragments/R_counter.php">Impression Counter</li>
+        <?php endif; ?>
+        </ul>
+        
+        <div class="header-navbar-col">
+            <a href="./u_schedule.php" class="header-navbar-row border-rounded">horaires</a>
         </div>
-    </nav>
+    </header>
 
-    <div class="pb-5"></div>
+    <main class="body-col col-main border border-rounder">
+

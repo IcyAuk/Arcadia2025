@@ -1,59 +1,49 @@
-<?php 
-require "template/header.php";
+<?php include_once "template/header.php"; ?>
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["login"])) {
-    // Check if email and password are provided
-    if (isset($_POST['email']) && isset($_POST['password'])) {
-        $email = $_POST['email'];
-        $password = $_POST['password'];
+<!-- FORM SECTION -->
+<section class="section-contained background-green1 column rounded text-white">
+    <form method="post" class="section-form" action="login.php">
 
-        // Fetch user record from database
-        $sql = "SELECT * FROM users WHERE email = :email";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        <legend>Connexion</legend>
 
-        // Check if user exists and password is correct
-        if ($user && password_verify($password, $user['password'])) {
-            // Start session and store user ID
-            session_start();
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['first_name'] = $user['first_name'];
-            // Redirect to dashboard or desired page
-            header("Location: admin/dashboard.php");
-            exit();
-        } else {
-            $error_message = "Invalid email or password.";
-        }
-    } else {
-        $error_message = "Email and password are required.";
-    }
+        <fieldset>
+            <label for="login-email">email</label>
+            <input class="input-text" type="email" name="login-email" id="login-email" required>
+        </fieldset>
+
+        <fieldset>
+            <label for="login-pw">Mot de passe</label>
+            <input class="input-text" type="password" name="login-pw" id="login-pw" required></input>
+        </fieldset>
+        <fieldset>
+            <input class="input-submit" type="submit" value="Confirmer">
+        </fieldset>
+    </form>
+</section>
+
+<?php
+//verifyLogin
+if ($_SERVER["REQUEST_METHOD"] == "POST"){
+        
+            $email = filter_input(INPUT_POST, "login-email", FILTER_SANITIZE_EMAIL);
+            $password = $_POST["login-pw"];
+
+            //machine will look for that email, then for matching password
+            $stmt = $pdo->prepare('SELECT id, email, name, password, role FROM staff WHERE email = ?');
+            $stmt->execute([$email]);
+            $staff = $stmt->fetch();
+
+            if ($staff && password_verify($password, $staff['password'])) {
+                // Password is correct, start a session
+                $_SESSION['user_id'] = $staff['id'];
+                $_SESSION['user_email'] = $staff['email'];
+                $_SESSION['user_name'] = $staff['name'];
+                $_SESSION['user_role'] = $staff['role'];
+                header("Location:admin/dashboard.php");
+            } else {
+                echo "Invalid email or password.";
+            }
 }
 ?>
 
-<div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <h2 class="text-center">Login</h2>
-                <?php if (isset($error_message)) : ?>
-                    <div class="alert alert-danger" role="alert">
-                        <?php echo $error_message; ?>
-                    </div>
-                <?php endif; ?>
-                <form action="" method="post">
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email:</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password:</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" name="login">Login</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-<?php require "template/footer.php" ?>
+<?php include_once "template/footer.php";?>

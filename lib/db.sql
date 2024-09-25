@@ -1,102 +1,124 @@
--- COMMENTS DONT WORK ON PHPMYADMIN
--- REMOVE COMMENTS BEFORE INITI
+--FINAL ARCADIA
+-- MACHINE HAS NO RIGHT TO INITIALIZE THE DATABASE. RUN EVERYTHING AS ROOT.
+-- GET RID OF COMMENTS IF NEEDED
 
--- DATABASE WITH USERS & STAFF, COMMENTS, MESSAGES, ARTICLES
-CREATE DATABASE IF NOT EXISTS arcadia;
-USE arcadia;
+--@block
+CREATE DATABASE IF NOT EXISTS arcadia2025;
+USE arcadia2025;
+CREATE USER 'arcadia2025machine'@localhost IDENTIFIED BY '1234';
+GRANT SELECT, INSERT, UPDATE, DELETE ON arcadia2025.* TO 'arcadia2025machine'@localhost;
 
--- machine cannot CREATE nor DROP.
--- machine will only UPDATE, INSERT, DELETE, READ
-CREATE USER 'arcadia_machine'@'localhost' IDENTIFIED BY '1234';
-GRANT SELECT, INSERT, UPDATE, DELETE ON arcadia.* TO 'arcadia_machine'@'localhost';
-
-CREATE TABLE users(
-    user_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    first_name VARCHAR(40) NOT NULL,
-    last_name VARCHAR(40) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL, -- to be hashed beforehand by the web app
-    is_veterinary BOOLEAN DEFAULT FALSE,
-    is_mod BOOLEAN DEFAULT FALSE,
-    is_admin BOOLEAN DEFAULT FALSE
+--@block
+-- USERS TABLE
+CREATE TABLE visitors(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255)
 );
 
+CREATE TABLE staff(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role ENUM("mod","vet","admin") NOT NULL
+);
+
+
+-- COMMENTS / CONTACT FORMS
 CREATE TABLE comments(
-    comment_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    user_id INT UNSIGNED,
-    comment_type INT NOT NULL, -- 1 comment awaiting approval, 2 validated comment, 3 message
-    comment_text TEXT,
-    posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    visitor_id INT NOT NULL,
+    visitor_username VARCHAR(255) NOT NULL,
+    rating INT NOT NULL,
+    comment TEXT NOT NULL,
+    status ENUM("pending","validated"),
+    FOREIGN KEY (visitor_id) REFERENCES visitors(id)
 );
 
-CREATE TABLE services(
-    service_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(50) NOT NULL,
-    description TEXT NOT NULL
+CREATE TABLE contacts(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL
 );
 
-CREATE TABLE sectors (
-    sector_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
+-- ANIMALS / HABITATS
+
+CREATE TABLE habitats(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-    content TEXT NOT NULL,
-    image_path VARCHAR(255)
+    imagePath TEXT NOT NULL
 );
 
-CREATE TABLE animals (
-    animal_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    sector_id INT UNSIGNED,
-    first_name VARCHAR(50) NULL,
-    race VARCHAR(50),
-    image_url VARCHAR(255),
-    FOREIGN KEY (sector_id) REFERENCES sectors(sector_id)
+CREATE TABLE animals(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    habitat_id INT NULL,
+    name VARCHAR(255) NOT NULL,
+    species VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    imagePath TEXT,
+    FOREIGN KEY (habitat_id) REFERENCES habitats(id) ON DELETE SET NULL
 );
 
-CREATE TABLE animal_logs (
-    animal_log_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    animal_id INT UNSIGNED,
-    views INT UNSIGNED NOT NULL DEFAULT 0,
-    visited DATE,
-    state VARCHAR(225),
-    state_detail TEXT,
-    food TEXT ,
-    food_weight TEXT,
-    FOREIGN KEY (animal_id) REFERENCES animals(animal_id)
+CREATE TABLE AnimalDietLog(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    animal_id INT NOT NULL,
+    food VARCHAR(255) NOT NULL,
+    food_kilogram INT,
+    log_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (animal_id) REFERENCES animals(id) ON DELETE CASCADE
 );
 
-CREATE TABLE reviews (
-    review_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) NOT NULL,
-    content TEXT NOT NULL,
-    UNIQUE (username)
+CREATE TABLE AnimalVetLog(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    vet_id INT NOT NULL,
+    animal_id INT NOT NULL,
+    proposed_food VARCHAR(255),
+    proposed_food_kilogram INT,
+    log_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    detail TEXT NULL,
+    FOREIGN KEY (vet_id) REFERENCES staff(id),
+    FOREIGN KEY (animal_id) REFERENCES animals(id) ON DELETE CASCADE
 );
 
-CREATE TABLE images (
-    image_id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-    url VARCHAR(255) NOT NULL
+CREATE TABLE animalImpressionCounter(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    animal_id INT NOT NULL,
+    counter BIGINT DEFAULT 0,
+    FOREIGN KEY (animal_id) REFERENCES animals(id) ON DELETE CASCADE
 );
 
-CREATE TABLE service_images (
-    service_id INT UNSIGNED,
-    image_id INT UNSIGNED,
-    FOREIGN KEY (service_id) REFERENCES Services(service_id),
-    FOREIGN KEY (image_id) REFERENCES Images(image_id),
-    PRIMARY KEY (service_id, image_id)
+-- HORAIRES
+
+CREATE TABLE schedule(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    day ENUM("lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche") NOT NULL,
+    ouverture TIME,
+    fermeture TIME,
+    is_closed TINYINT(1) DEFAULT 0,
+    -- prevent duplicated days
+    UNIQUE KEY unique_day (day)
 );
 
-CREATE TABLE sector_images (
-    sector_id INT UNSIGNED,
-    image_id INT UNSIGNED,
-    FOREIGN KEY (sector_id) REFERENCES Sectors(sector_id),
-    FOREIGN KEY (image_id) REFERENCES Images(image_id),
-    PRIMARY KEY (sector_id, image_id)
+INSERT INTO schedule (day, ouverture, fermeture)
+    VALUES
+    ('lundi', '09:00:00', '17:00:00'),
+    ('mardi', '09:00:00', '17:00:00'),
+    ('mercredi', '09:00:00', '17:00:00'),
+    ('jeudi', '09:00:00', '17:00:00'),
+    ('vendredi', '09:00:00', '17:00:00'),
+    ('samedi', '09:00:00', '17:00:00'),
+    ('dimanche', '09:00:00', '17:00:00');
+
+
+-- SERVICES
+CREATE TABLE services(
+    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    imagePath TEXT NOT NULL
 );
 
-CREATE TABLE animal_images (
-    animal_id INT UNSIGNED,
-    image_id INT UNSIGNED,
-    FOREIGN KEY (animal_id) REFERENCES Animals(animal_id),
-    FOREIGN KEY (image_id) REFERENCES Images(image_id),
-    PRIMARY KEY (animal_id, image_id)
-);

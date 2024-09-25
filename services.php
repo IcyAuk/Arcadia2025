@@ -1,36 +1,35 @@
-<?php require "template/header.php"; ?>
+<?php include_once "template/header.php"; ?>
 
-<div class="container mt-5">
-    <h1>Nos Services</h1>
+<?php
+try
+{
+    $stmt = $pdo->prepare("SELECT title, description, imagePath FROM services");
+    $stmt->execute();
+    $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch(PDOException $e){
+    echo "Erreur: ". $e->getMessage();
+    die();
+}
+?>
 
-    <div class="row">
-        <div class="col-lg-4 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Restauration</h5>
-                    <p class="card-text">Description de la restauration.</p>
-                </div>
+
+<section class="section-container column">
+    <h2>Nos Services</h2>
+    <!--CYCLE-THROUGH START-->
+    <?php foreach($services as $service): ?>
+    <article>
+        <div class="hero-container border">
+            <div class="container-col">
+                <h2><?= htmlspecialchars($service['title']) ?></h2>
+                <p><?= htmlspecialchars($service['description']) ?></p>
+            </div>
+            <div class="container-col container-col-img">
+                <img src=" <?= htmlspecialchars($service['imagePath']) ?> " alt="hero-image">
             </div>
         </div>
+    </article>
+    <?php endforeach; ?>
+    <!--CYCLE-THROUGH END-->
+</section>
 
-        <div class="col-lg-4 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Visite des habitats</h5>
-                    <p class="card-text">Description de la visite des habitats.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Visite du zoo en petit train</h5>
-                    <p class="card-text">Description de la visite du zoo en petit train.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<?php require "template/footer.php"; ?>
+<?php include_once "template/footer.php"; ?>
